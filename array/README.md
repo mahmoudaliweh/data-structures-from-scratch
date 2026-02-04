@@ -70,19 +70,15 @@ Variable size
 
 
 
-Access O(1)
+|Access|O(1)|
+|-|-|
+|Search (unsorted)|O(n)|
+|Search (sorted)|O(log(n))|
+|Insertion at end|O(1) if there is space, O(n) if full|
+|Insertion at middle/beginning|O(n)|
+|Deletion at end|O(1)|
+|Deletion at middle/start|O(n)|
+|Traversal|O(n)|
 
-Search (unsorted) O(n)
 
-Search (sorted) O(log(n))
-
-Insertion at end O(1) (if there is space), O(n) (if full)
-
-Insertion at middle/beginning O(n)
-
-Deletion at end O(1)
-
-Deletion at middle/start O(n)
-
-Traversal O(n)
 
