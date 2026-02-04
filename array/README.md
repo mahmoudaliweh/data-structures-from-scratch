@@ -2,7 +2,7 @@ Array is a fundamental linear data structure that stores elements of the same da
 
 
 
-Advantages:
+\#Advantages:
 
 
 
@@ -22,7 +22,7 @@ Then accessing arr\[1], arr\[2]… is already in cache → extremely fast.
 
 
 
-Disadvantages:
+\#Disadvantages:
 
 
 
@@ -34,7 +34,7 @@ Insertion/Deletion in O(n) time. Since it's static and fixed you won't be able t
 
 
 
-Applications:
+\#Applications:
 
 
 
@@ -46,7 +46,7 @@ Buffers in real-time systems
 
 
 
-When to use arrays?
+\#When to use arrays?
 
 
 
@@ -56,7 +56,7 @@ You know or can approximate size in advance.
 
 
 
-When not to use it?
+\#When not to use it?
 
 
 
@@ -66,7 +66,7 @@ Variable size
 
 
 
-Operations' time complexity:
+\#Operations' time complexity:
 
 
 
@@ -84,7 +84,5 @@ Deletion at end O(1)
 
 Deletion at middle/start O(n)
 
-Traversal O(n) 
-
-
+Traversal O(n)
 
