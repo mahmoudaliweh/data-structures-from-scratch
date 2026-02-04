@@ -2,7 +2,7 @@ Array is a fundamental linear data structure that stores elements of the same da
 
 
 
-\# Advantages
+##### Advantages
 
 
 
