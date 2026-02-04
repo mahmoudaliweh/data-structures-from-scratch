@@ -60,6 +60,8 @@ Mutable String Operations' Time Complexity
 
 
 
+
+
 |Operation|Time Complexity|Explanation|
 |-|-|-|
 |length|O(1)|Strings store their length|
