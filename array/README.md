@@ -70,7 +70,7 @@ Variable size
 
 
 
-|Access|O(1)|
+|Operation|Time Complexity|
 |-|-|
 |Search (unsorted)|O(n)|
 |Search (sorted)|O(log(n))|
@@ -79,6 +79,7 @@ Variable size
 |Deletion at end|O(1)|
 |Deletion at middle/start|O(n)|
 |Traversal|O(n)|
+|Access|O(1)|
 
 
 
