@@ -10,5 +10,5 @@ A circular queue is a queue where the last position connects back to the first, 
 
 
 
-It solves the wasted space problem of linear queues that are implemented used arrays.
+It solves the wasted space problem of linear queues that are implemented using arrays.
 
