@@ -52,13 +52,11 @@ Append-heavy workload.
 
 |Operation|Static Array|Dynamic Array|
 |-|-|-|
-|Random Access |O(1)|O(1)|
+|Random Access|O(1)|O(1)|
 |Append|O(n)|O(1) amortized|
 |Insert|O(n)|O(n)|
 |Delete at end|O(1)|O(1)|
-|Delete at begin/end|O(n)|O(n)|
-
-
+|Delete at begin/middle|O(n)|O(n)|
 
 
 
