@@ -3,14 +3,14 @@ using namespace std;
 
 class Node {
 private:
-    int data;
+    int key;
     Node *leftChild;
     Node *rightChild;
     int height;
     friend class AVLTree;
 
 public:
-    Node(int data): data(data), leftChild(nullptr), rightChild(nullptr), height(0) {
+    Node(int key): key(key), leftChild(nullptr), rightChild(nullptr), height(0) {
     }
 };
 
@@ -18,19 +18,20 @@ class AVLTree {
 private:
     Node *root;
 
-    void updateHeight(Node* node) {
-        int leftHeight = (node->leftChild? node->leftChild->height: -1);
-        int rightHeight = (node->rightChild? node->rightChild->height: -1);
+    void updateHeight(Node *node) {
+        int leftHeight = (node->leftChild ? node->leftChild->height : -1);
+        int rightHeight = (node->rightChild ? node->rightChild->height : -1);
         node->height = max(leftHeight, rightHeight) + 1;
     }
 
-    int getBalance(Node* node) {
-        int leftHeight = (node->leftChild? node->leftChild->height: -1);
-        int rightHeight = (node->rightChild? node->rightChild->height: -1);
+    int getBalance(Node *node) {
+        int leftHeight = (node->leftChild ? node->leftChild->height : -1);
+        int rightHeight = (node->rightChild ? node->rightChild->height : -1);
         return leftHeight - rightHeight;
     }
-    Node *leftRotate(Node* node) {
-        Node* oldRightChild = node->rightChild;
+
+    Node *leftRotate(Node *node) {
+        Node *oldRightChild = node->rightChild;
         node->rightChild = oldRightChild->leftChild;
         oldRightChild->leftChild = node;
         updateHeight(node);
@@ -38,8 +39,8 @@ private:
         return oldRightChild;
     }
 
-    Node *rightRotate(Node* node) {
-        Node* oldLeftChild = node->leftChild;
+    Node *rightRotate(Node *node) {
+        Node *oldLeftChild = node->leftChild;
         node->leftChild = oldLeftChild->rightChild;
         oldLeftChild->rightChild = node;
         updateHeight(node);
@@ -47,68 +48,124 @@ private:
         return oldLeftChild;
     }
 
-
-    Node *insertNode(Node *nodeToInsert, Node *nodeToInsertIn) {
-        if (nodeToInsert->data > nodeToInsertIn->data) {
-
-            if (nodeToInsertIn->rightChild == nullptr) {
-                nodeToInsertIn->rightChild = nodeToInsert;
-
-            } else {
-                nodeToInsertIn->rightChild = insertNode(nodeToInsert, nodeToInsertIn->rightChild);
-
+    Node *balance(Node *node) {
+        int balanceFactor = getBalance(node);
+        if (balanceFactor < -1) {
+            if (getBalance(node->rightChild) > 0) {
+                node->rightChild = rightRotate(node->rightChild);
             }
-
-        } else if (nodeToInsert->data < nodeToInsertIn->data) {
-
-            if (nodeToInsertIn->leftChild == nullptr) {
-                nodeToInsertIn->leftChild = nodeToInsert;
-
-            } else {
-                nodeToInsertIn->leftChild = insertNode(nodeToInsert, nodeToInsertIn->leftChild);
-            }
-
+            return leftRotate(node);
         }
-        int leftSubHeight = (nodeToInsertIn->leftChild? nodeToInsertIn-> leftChild->height : -1);
-        int rightSubHeight = (nodeToInsertIn->rightChild? nodeToInsertIn->rightChild->height : -1);
-        nodeToInsertIn->height = max(leftSubHeight, rightSubHeight) + 1;
-        int balanceFactor = leftSubHeight - rightSubHeight;
-        
-        if(balanceFactor < -1) {
-            if(getBalance(nodeToInsertIn->rightChild) > 0) {
-                nodeToInsertIn->rightChild = rightRotate(nodeToInsertIn->rightChild);
+        if (balanceFactor > 1) {
+            if (getBalance(node->leftChild) < 0) {
+                node->leftChild = leftRotate(node->leftChild);
             }
-            return leftRotate(nodeToInsertIn);
-        } else if(balanceFactor > 1) {
-            if(getBalance(nodeToInsertIn->leftChild) < 0) {
-                nodeToInsertIn->leftChild = leftRotate(nodeToInsertIn->leftChild);
-            }
-            return rightRotate(nodeToInsertIn);
+            return rightRotate(node);
         }
+        return node;
+    }
 
-        return nodeToInsertIn;
+
+    Node *insertNode(int key, Node *currentNode) {
+        if (key > currentNode->key) {
+            if (currentNode->rightChild == nullptr) {
+                currentNode->rightChild = new Node(key);
+            } else {
+                currentNode->rightChild = insertNode(key, currentNode->rightChild);
+            }
+        } else if (key < currentNode->key) {
+            if (currentNode->leftChild == nullptr) {
+                currentNode->leftChild = new Node(key);
+            } else {
+                currentNode->leftChild = insertNode(key, currentNode->leftChild);
+            }
+        } else return currentNode;
+
+        updateHeight(currentNode);
+        return balance(currentNode);
     }
 
     void inOrderTraversal(Node *currentNode) {
         if (!currentNode) return;
         inOrderTraversal(currentNode->leftChild);
-        cout << "Data: "<< currentNode->data << " Balance: " << getBalance(currentNode) << endl;
+        cout << "key: " << currentNode->key << " Balance: " << getBalance(currentNode) << endl;
         inOrderTraversal(currentNode->rightChild);
+    }
+
+    Node *replaceWithInOrderSuccessor(Node *node, Node *currentNode) {
+        if (!currentNode->leftChild) {
+            node->key = currentNode->key;
+            Node *rightChild = currentNode->rightChild;
+            delete currentNode;
+            return rightChild;
+        }
+        currentNode->leftChild = replaceWithInOrderSuccessor(node, currentNode->leftChild);
+        updateHeight(currentNode);
+        return balance(currentNode);
+    }
+
+    Node *deleteNode(int key, Node *currentNode) {
+        if (!currentNode) {
+            return nullptr;
+        }
+        if (key == currentNode->key) {
+            if (currentNode->rightChild && currentNode->leftChild) {
+                currentNode->rightChild = replaceWithInOrderSuccessor(currentNode, currentNode->rightChild);
+            } else if (currentNode->rightChild) {
+                Node *rightChild = currentNode->rightChild;
+                delete currentNode;
+                return rightChild;
+            } else if (currentNode->leftChild) {
+                Node *leftChild = currentNode->leftChild;
+                delete currentNode;
+                return leftChild;
+            } else {
+                delete currentNode;
+                return nullptr;
+            }
+        } else if (key > currentNode->key) {
+            currentNode->rightChild = deleteNode(key, currentNode->rightChild);
+        } else if (key < currentNode->key) {
+            currentNode->leftChild = deleteNode(key, currentNode->leftChild);
+        }
+        updateHeight(currentNode);
+        return balance(currentNode);
+    }
+
+    Node *search(int key, Node *currentNode) {
+        if (!currentNode) {
+            return nullptr;
+        }
+        if (currentNode->key == key) {
+            return currentNode;
+        } else if (key > currentNode->key) {
+            return search(key, currentNode->rightChild);
+        } else {
+            return search(key, currentNode->leftChild);
+        }
     }
 
 public:
     AVLTree(): root(nullptr) {
     }
 
-    void insert(int data) {
+    void Insert(int key) {
         if (!root) {
-            root = new Node(data);
+            root = new Node(key);
             return;
         }
-        root = insertNode(new Node(data), root);
+        root = insertNode(key, root);
     }
 
-    void print() {
+    void Delete(int key) {
+        root = deleteNode(key, root);
+    }
+
+    Node *Search(int key) {
+        return search(key, root);
+    }
+
+    void Print() {
         if (!root) {
             cout << "Tree is empty" << endl;
             return;
@@ -117,20 +174,3 @@ public:
         cout << endl;
     }
 };
-
-int main() {
-    AVLTree tr;
-    tr.insert(1);
-    tr.insert(2);
-    tr.insert(3);
-    tr.insert(4);
-    tr.insert(5);
-    tr.insert(43);
-    tr.insert(32);
-    tr.insert(-2);
-    tr.insert(12);
-    tr.insert(32);
-    tr.insert(16);
-
-    tr.print();
-}
