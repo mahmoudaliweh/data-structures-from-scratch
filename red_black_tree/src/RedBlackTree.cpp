@@ -1,163 +1,175 @@
 #include <iostream>
 using namespace std;
 
-enum class COLOR {RED, BLACK};
+enum class COLOR { RED, BLACK };
+
 class Node {
 private:
     COLOR color;
     int key;
-    Node* left;
-    Node* right;
-    Node* parent;
+    Node *left;
+    Node *right;
+    Node *parent;
     friend class RedBlackTree;
 
 public:
-    Node(int key):key(key), color(COLOR::RED), left(nullptr), right(nullptr), parent(nullptr){}
+    Node(int key): key(key), color(COLOR::RED), left(nullptr), right(nullptr), parent(nullptr) {
+    }
 };
 
 class RedBlackTree {
 private:
-    Node* root;
-    Node* NIL;
-    bool isBlack(Node* node) {
-        return node->color == COLOR::BLACK;
+    Node *root;
+
+    bool isBlack(Node *node) {
+        if (!node || node->color == COLOR::BLACK) {
+            return true;
+        }
+        return false;
     }
-    bool isRed(Node* node) {
+
+    bool isRed(Node *node) {
         return !isBlack(node);
     }
-    Node* parent(Node* node) {
-        return node->parent;
+
+    void leftRotate(Node *node) {
+        Node *x = node;
+        Node *y = node->right;
+        Node *xParent = x->parent;
+        if (xParent) {
+            if (isALeftChild(x)) {
+                xParent->left = y;
+            } else {
+                xParent->right = y;
+            }
+        } else {
+            root = y;
+        }
+        y->parent = xParent;
+        x->right = y->left;
+        if (y->left) {
+            y->left->parent = x;
+        }
+        x->parent = y;
+        y->left = x;
     }
-    Node* uncle(Node* node) {
-        return (node->parent->parent->right == node->parent ? node->parent->parent->left:node->parent->parent->right);
+
+    void rightRotate(Node *node) {
+        Node *x = node;
+        Node *y = node->left;
+        Node *xParent = x->parent;
+        if (xParent) {
+            if (isALeftChild(x)) {
+                xParent->left = y;
+            } else {
+                xParent->right = y;
+            }
+        } else {
+            root = y;
+        }
+        y->parent = xParent;
+        x->left = y->right;
+        if (y->right) {
+            y->right->parent = x;
+        }
+        x->parent = y;
+        y->right = x;
     }
-    Node* grandparent(Node* node) {
-        return node->parent->parent;
+
+    Node *parent(Node *node) {
+        if (node) {
+            return node->parent;
+        }
+        return nullptr;
     }
-    bool isALeftChild(Node* node) {
-        return parent(node)->left == node;
+
+    Node *grandparent(Node *node) {
+        if (parent(node)) {
+            return node->parent->parent;
+        }
+        return nullptr;
     }
-    bool isARightChild(Node* node) {
+
+    Node *uncle(Node *node) {
+        if (grandparent(node)) {
+            return (node->parent == node->parent->parent->left
+                        ? node->parent->parent->right
+                        : node->parent->parent->left);
+        }
+        return nullptr;
+    }
+
+    bool isALeftChild(Node *node) {
+        return node && node->parent && node == node->parent->left;
+    }
+
+    bool isARightChild(Node *node) {
         return !isALeftChild(node);
     }
-    void leftRotate(Node* x) {
-        Node* y = x->right;
-
-        x->right = y->left;
-
-        if (y->left != NIL)
-            y->left->parent = x;
-
-        y->parent = x->parent;
-
-        if (x->parent == NIL)
-            root = y;
-        else if (x == x->parent->left)
-            x->parent->left = y;
-        else
-            x->parent->right = y;
-
-        y->left = x;
-        x->parent = y;
-    }
-
-    void rightRotate(Node* y) {
-        Node* x = y->left;  // x will become new parent
-
-        // Move x's right subtree to y's left
-        y->left = x->right;
-        if (x->right != NIL)
-            x->right->parent = y;
-
-        // Link x to y's parent
-        x->parent = y->parent;
-        if (y->parent == NIL)
-            root = x; // Update root if y was root
-        else if (y == y->parent->left)
-            y->parent->left = x;
-        else
-            y->parent->right = x;
-
-        // Put y as right child of x
-        x->right = y;
-        y->parent = x;
-    }
 
 
-    void fix(Node* node) {
-        if(node == root) {
+    void fix(Node *node) {
+        if (node == root) {
             node->color = COLOR::BLACK;
             return;
         }
-        if(isBlack(parent(node))) {
-            return;
-        }
-        if(isRed(uncle(node))) {
-            parent(node)->color = COLOR::BLACK;
-            uncle(node)->color = COLOR::BLACK;
-            grandparent(node)->color = COLOR::RED;
-            fix(grandparent(node));
-            return;
-        }
-        if(isARightChild(node)) {
-            if(isALeftChild(parent(node))) {
-                rightRotate(parent(node));
+        Node *p = parent(node);
+        Node *g = grandparent(node);
+        if (isRed(node->parent)) {
+            if (isRed(uncle(node))) {
+                uncle(node)->color = COLOR::BLACK;
+                parent(node)->color = COLOR::BLACK;
+                grandparent(node)->color = COLOR::RED;
+                fix(grandparent(node));
+                return;
             }
-            grandparent(node)->color = COLOR::RED;
-            parent(node)->color = COLOR::BLACK;
-            leftRotate(grandparent(node));
-        } else {
-            if(isARightChild(parent(node))) {
-                leftRotate(parent(node));
+            if (isARightChild(p)) {
+                if (isALeftChild(node)) {
+                    rightRotate(p);
+                }
+                g->color = COLOR::RED;
+                g->right->color = COLOR::BLACK;
+                leftRotate(g);
+            } else {
+                if (isARightChild(node)) {
+                    leftRotate(p);
+                }
+                g->color = COLOR::RED;
+                g->left->color = COLOR::BLACK;
+                rightRotate(g);
             }
-            grandparent(node)->color = COLOR::RED;
-            parent(node)->color = COLOR::BLACK;
-            rightRotate(grandparent(node));
         }
-
+        root->color = COLOR::BLACK;
     }
 
-    Node* createNode(int key) {
-        Node* node = new Node(key);
-        node->left = NIL;
-        node->right = NIL;
-        node->color = COLOR::RED;
-        return node;
-    }
 public:
-    RedBlackTree() {
-        NIL = new Node(0);
-        NIL->color = COLOR::BLACK;
-        NIL->right = NIL;
-        NIL->left = NIL;
-        NIL->parent = nullptr;
-        root = NIL;
+    RedBlackTree(): root(nullptr) {
     }
-    void Insert(int key) {
-        Node* node = createNode(key);
-        if(root == NIL) {
-            root = node;
-            node->color = COLOR::BLACK;
-            return;
-        }
-        Node* current = root;
-        Node* parent = nullptr;
-        while (current != NIL) {
+
+    void insert(int key) {
+        Node *node = new Node(key);
+        Node *current = root;
+        Node *parent = nullptr;
+        while (current) {
             parent = current;
-            if(key > current->key) {
+            if (key > current->key) {
                 current = current->right;
-            } else if(key < current->key) {
+            } else if (key < current->key) {
                 current = current->left;
             } else {
                 delete node;
                 return;
             }
         }
-        node->parent = parent;
-        if(key > parent->key) {
-            parent->right = node;
+        if (parent) {
+            node->parent = parent;
+            if (key > parent->key) {
+                parent->right = node;
+            } else {
+                parent->left = node;
+            }
         } else {
-            parent->left = node;
+            root = node;
         }
         fix(node);
     }
