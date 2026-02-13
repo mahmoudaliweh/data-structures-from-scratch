@@ -13,9 +13,9 @@
 
 ### We always insert/delete at the leaf therefore:
 
-1. Insertion might break property 1.
 
-2\. Deletion might break the property 2.
+1. Insertion might break property 1.
+2. Deletion might break the property 2.
 
 We choose the color of the node to be inserted to be red because fixing property 1 is easier than fixing property 2.
 
