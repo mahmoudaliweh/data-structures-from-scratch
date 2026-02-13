@@ -13,11 +13,15 @@
 
 ### We always insert/delete at the leaf therefore:
 
+<<<<<<< HEAD
 
 
 1. Insertion might break property 1.
+=======
+>>>>>>> 61dbeeba9431b3bae7e6fcf020d694e65767b3c3
 
-2\. Deletion might break the property 2.
+1. Insertion might break property 1.
+2. Deletion might break the property 2.
 
 We choose the color of the node to be inserted to be red because fixing property 1 is easier than fixing property 2.
 
