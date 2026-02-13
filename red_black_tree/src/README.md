@@ -13,6 +13,8 @@
 
 ### We always insert/delete at the leaf therefore:
 
+
+
 1. Insertion might break property 1.
 
 2\. Deletion might break the property 2.
