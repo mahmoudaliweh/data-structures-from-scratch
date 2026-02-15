@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-enum class COLOR { RED, BLACK };
+enum class COLOR { RED, BLACK, NIL };
 
 class Node {
 private:
@@ -104,11 +104,11 @@ private:
     }
 
     bool isARightChild(Node *node) {
-        return !isALeftChild(node);
+        return node && node->parent && node == node->parent->right;
     }
 
 
-    void fix(Node *node) {
+    void insertFix(Node *node) {
         if (node == root) {
             node->color = COLOR::BLACK;
             return;
@@ -120,7 +120,7 @@ private:
                 uncle(node)->color = COLOR::BLACK;
                 parent(node)->color = COLOR::BLACK;
                 grandparent(node)->color = COLOR::RED;
-                fix(grandparent(node));
+                insertFix(grandparent(node));
                 return;
             }
             if (isARightChild(p)) {
@@ -142,11 +142,130 @@ private:
         root->color = COLOR::BLACK;
     }
 
+    void doubleBlack(Node *node) {
+        if (node == root) {
+            node->color = COLOR::BLACK;
+        } else if (isALeftChild(node)) {
+            if (node->parent->right && isRed(node->parent->right)) {
+                node->parent->color = COLOR::RED;
+                node->parent->right->color = COLOR::BLACK;
+                leftRotate(node->parent);
+                doubleBlack(node);
+            } else if (isRed(node->parent->right->right)) {
+                node->parent->right->color = node->parent->color;
+                node->parent->color = COLOR::BLACK;
+                node->parent->right->right->color = COLOR::BLACK;
+                leftRotate(node->parent);
+                if (node->color == COLOR::NIL) {
+                    deleteNode(node);
+                }
+            } else if (isRed(node->parent)) {
+                node->parent->color = COLOR::BLACK;
+                node->parent->right->color = COLOR::RED;
+                if (node->color == COLOR::NIL) {
+                    deleteNode(node);
+                }
+            } else if (isRed(node->parent->right->left)) {
+                node->parent->right->color = COLOR::RED;
+                node->parent->right->left->color = COLOR::BLACK;
+                leftRotate(node->parent->right);
+                doubleBlack(node);
+            } else {
+                node->parent->right->color = COLOR::RED;
+                Node *nextDB = node->parent;
+                if (node->color == COLOR::NIL) {
+                    deleteNode(node);
+                }
+                doubleBlack(nextDB);
+            }
+        } else if (isARightChild(node)) {
+            if (node->parent->left && isRed(node->parent->left)) {
+                node->parent->color = COLOR::RED;
+                node->parent->left->color = COLOR::BLACK;
+                rightRotate(node->parent);
+                doubleBlack(node);
+            } else if (isRed(node->parent->left->left)) {
+                node->parent->left->color = node->parent->color;
+                node->parent->color = COLOR::BLACK;
+                node->parent->left->left->color = COLOR::BLACK;
+                rightRotate(node->parent);
+                if (node->color == COLOR::NIL) {
+                    deleteNode(node);
+                }
+            } else if (isRed(node->parent)) {
+                node->parent->color = COLOR::BLACK;
+                node->parent->left->color = COLOR::RED;
+                if (node->color == COLOR::NIL) {
+                    deleteNode(node);
+                }
+            } else if (isRed(node->parent->left->right)) {
+                node->parent->left->color = COLOR::RED;
+                node->parent->left->right->color = COLOR::BLACK;
+                rightRotate(node->parent->left);
+                doubleBlack(node);
+            } else {
+                node->parent->left->color = COLOR::RED;
+                Node *nextDB = node->parent;
+                if (node->color == COLOR::NIL) {
+                    deleteNode(node);
+                }
+                doubleBlack(nextDB);
+            }
+        }
+    }
+
+    void deleteNode(Node *node) {
+        if (isALeftChild(node)) {
+            node->parent->left = nullptr;
+        }
+        if (isARightChild(node)) {
+            node->parent->right = nullptr;
+        }
+        if (node->right) {
+            node->right->parent = nullptr;
+        }
+        if (node->left) {
+            node->left->parent = nullptr;
+        }
+        delete node;
+    }
+
+    Node *inOrderSuccessor(Node *node) {
+        Node *current = node->right;
+        while (true) {
+            if (current->left) {
+                current = current->left;
+            } else {
+                break;
+            }
+        }
+        return current;
+    }
+
+    Node *inOrderPredecessor(Node *node) {
+        Node *current = node->left;
+        while (true) {
+            if (current->right) {
+                current = current->right;
+            } else {
+                break;
+            }
+        }
+        return current;
+    }
+
+    bool isLeaf(Node *node) {
+        if (node) {
+            return (!node->right && !node->left);
+        }
+        return false;
+    }
+
 public:
     RedBlackTree(): root(nullptr) {
     }
 
-    void insert(int key) {
+    void Insert(int key) {
         Node *node = new Node(key);
         Node *current = root;
         Node *parent = nullptr;
@@ -171,6 +290,72 @@ public:
         } else {
             root = node;
         }
-        fix(node);
+        insertFix(node);
+    }
+    
+    
+    void Delete(int key) {
+        Node *current = root;
+        while (current) {
+            if (key > current->key) {
+                current = current->right;
+            } else if (key < current->key) {
+                current = current->left;
+            } else {
+                if (isLeaf(current)) {
+                    if (isRed(current)) {
+                        deleteNode(current);
+                    } else {
+                        if (current == root) {
+                            delete root;
+                            root = nullptr;
+                        } else {
+                            current->color = COLOR::NIL;
+                            doubleBlack(current);
+                        }
+                    }
+                    return;
+                }
+
+                if (current->right && current->left) {
+                    Node *successor = inOrderPredecessor(current);
+                    current->key = successor->key;
+                    key = successor->key;
+                    current = successor;
+                    continue;
+                }
+
+                if (current->right) {
+                    current->right->color = COLOR::BLACK;
+                    current->right->parent = current->parent;
+                    if (isALeftChild(current)) {
+                        current->parent->left = current->right;
+                    } else if (isARightChild(current)) {
+                        current->parent->right = current->right;
+                    } else {
+                        root = current->right;
+                    }
+                    delete current;
+                    return;
+                }
+
+                if (current->left) {
+                    current->left->color = COLOR::BLACK;
+                    current->left->parent = current->parent;
+                    if (isALeftChild(current)) {
+                        current->parent->left = current->left;
+                    } else if (isARightChild(current)) {
+                        current->parent->right = current->left;
+                    } else {
+                        root = current->left;
+                    }
+                    delete current;
+                    return;
+                }
+            }
+        }
     }
 };
+
+
+
