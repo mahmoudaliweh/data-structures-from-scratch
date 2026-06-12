@@ -43,7 +43,7 @@ It prevents **thrashing**—a catastrophic state where a system spends more time
 | **Update**   | $O(\log_m N)$   | $O(\log_m N)$     | $O(1)$ auxiliary          |
 | **Traverse** | $O(N)$          | $O(N)$            | $O(\log_m N)$ stack space |
 
-*Where **$m$** represents the order of the B-Tree (maximum number of children per node) and **$N$** represents the total number of keys currently stored in the tree.*
+*Where **m** represents the order of the B-Tree (maximum number of children per node) and **N** represents the total number of keys currently stored in the tree.*
 
 ## Comments
 
